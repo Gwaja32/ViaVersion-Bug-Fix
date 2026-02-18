@@ -4,10 +4,10 @@ Prevent conflicts between [ViaVersion](https://modrinth.com/plugin/viaversion)'s
 
 Maybe Resolve the [issue](https://github.com/ViaVersion/ViaFabric/issues/428#issuecomment-3395324766).
 
-ViaVersion and Fabric API are required, but not included in this mod.
+Version 1.0 requires ViaVersion and Fabric APIs, but this mode is not included. Version 1.1 and later do not have any modes that depend.
 
 *This mode was created and tested in a 1.21.10 or 1.21.11 host environment, and compatibility with other versions has not been verified.*
 
-※ Starting with version **1.1**, all particles are displayed normally (including landing particles).  
-
 The mod must be applied to the fabric server side.
+
+※ Starting with version **1.1**, all particles are displayed normally (including landing particles). 
