@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "viaversion-bug-fix",
+  "version": "${version}",
+  "name": "ViaVersion-Bug-Fix",
+  "description": "",
+  "authors": [
+    "Gwaja32"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/viaversion-bug-fix/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "client": [
+      "kr.haruserver.viaversionbugfix.client.ViaVersion_Bug_FixClient"
+    ],
+    "main": [
+      "kr.haruserver.viaversionbugfix.ViaVersion_Bug_Fix"
+    ]
+  },
+  "mixins": [
+    "viaversion-bug-fix.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
