@@ -1,10 +1,10 @@
 package kr.haruserver.viaversionbugfix.mixin;
 
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
-import net.minecraft.particle.BlockStateParticleEffect;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.server.network.ServerCommonNetworkHandler;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
+import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -12,11 +12,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ServerCommonNetworkHandler.class)
+@Mixin(ServerCommonPacketListenerImpl.class)
 public class FabricParticleFixerMixin {
 
     @Shadow
-    public void sendPacket(Packet<?> packet) {
+    public void send(Packet<?> packet) {
         // Original Method Call
     }
 
@@ -24,7 +24,7 @@ public class FabricParticleFixerMixin {
     @Unique
     private static final ThreadLocal<Boolean> IS_FIXING = ThreadLocal.withInitial(() -> false);
 
-    @Inject(method = "sendPacket(Lnet/minecraft/network/packet/Packet;)V",
+    @Inject(method = "send(Lnet/minecraft/network/protocol/Packet;)V",
             at = @At("HEAD"),
             cancellable = true)
     private void onSendPacket(Packet<?> packet, CallbackInfo ci) {
@@ -32,27 +32,27 @@ public class FabricParticleFixerMixin {
         // it goes through without interception
         if (IS_FIXING.get()) return;
 
-        if (packet instanceof ParticleS2CPacket oldPacket) {
-            ParticleEffect cleanParameters = getCleanParticleEffect(oldPacket);
+        if (packet instanceof ClientboundLevelParticlesPacket oldPacket) {
+            ParticleOptions cleanParameters = getCleanParticleEffect(oldPacket);
 
             try {
                 IS_FIXING.set(true);
 
-                ParticleS2CPacket cleanPacket = new ParticleS2CPacket(
+                ClientboundLevelParticlesPacket cleanPacket = new ClientboundLevelParticlesPacket(
                         cleanParameters,
-                        oldPacket.shouldForceSpawn(),
-                        oldPacket.isImportant(),
+                        oldPacket.isOverrideLimiter(),
+                        oldPacket.alwaysShow(),
                         oldPacket.getX(),
                         oldPacket.getY(),
                         oldPacket.getZ(),
-                        oldPacket.getOffsetX(),
-                        oldPacket.getOffsetY(),
-                        oldPacket.getOffsetZ(),
-                        oldPacket.getSpeed(),
+                        oldPacket.getXDist(),
+                        oldPacket.getYDist(),
+                        oldPacket.getZDist(),
+                        oldPacket.getMaxSpeed(),
                         oldPacket.getCount()
                 );
 
-                this.sendPacket(cleanPacket);
+                this.send(cleanPacket);
                 ci.cancel();
             } finally {
                 IS_FIXING.set(false);
@@ -61,12 +61,12 @@ public class FabricParticleFixerMixin {
     }
 
     @Unique
-    private static ParticleEffect getCleanParticleEffect(ParticleS2CPacket oldPacket) {
-        ParticleEffect parameters = oldPacket.getParameters();
-        ParticleEffect cleanParameters = parameters;
+    private static ParticleOptions getCleanParticleEffect(ClientboundLevelParticlesPacket oldPacket) {
+        ParticleOptions parameters = oldPacket.getParticle();
+        ParticleOptions cleanParameters = parameters;
 
-        if (parameters instanceof BlockStateParticleEffect blockEffect) {
-            cleanParameters = new BlockStateParticleEffect(blockEffect.getType(), blockEffect.getBlockState());
+        if (parameters instanceof BlockParticleOption blockEffect) {
+            cleanParameters = new BlockParticleOption(blockEffect.getType(), blockEffect.getState());
         }
         return cleanParameters;
     }
